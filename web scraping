@@ -1,0 +1,55 @@
+library("rvest")
+
+url <- 'http://www.imdb.com/search/title?count=100&release_date=2016,2016&title_type=feature'
+
+webpage<- read_html(url)
+
+# using selectors gazzed scrape teh ranking 
+
+rank_data_html <- html_nodes(webpage, '.text-primary')
+rank_data<- html_text(rank_data_html)
+head(rank_data)
+
+#converting ranking to numerric
+rank_data<- as.numeric(rank_data)
+head(rank_data)
+
+## to scrap the tittle section
+tittle_data_html <-html_nodes(webpage, '.lister-item-header a')
+# converting the tittle data to text 
+tittle_data <-html_text(tittle_data_html)
+head(tittle_data)
+
+## selectors to scrape the description section 
+description_data_html<- html_nodes(webpage,
+'.ratings-bar+ .text-muted')
+
+description_data <- html_text(description_data_html)
+head(description_data)
+
+#Data-Preprocessing: removing '\n'
+description_data<-gsub("\n","",description_data)
+head(description_data)
+
+## for movie running time 
+runtime_data_html <- html_nodes(webpage,'.text-muted .runtime')
+runtime_data <- html_text(runtime_data_html)
+head(runtime_data)
+
+#removing mins and converting it to numericals
+runtime_data <-gsub(" min","",runtime_data)
+runtime_data <-as.numeric(runtime_data)
+head(runtime_data)
+
+##combining all the list to form data frame 
+movie_df <- data.frame(Rank=rank_data, Tittle= tittle_data,
+                       Description= description_data,
+                       Runtime= runtime_data)
+str(movie_df)
+
+library('ggplot2')
+qplot(data=movie_df, Tittle)
+
+
+
+
