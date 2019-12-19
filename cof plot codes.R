@@ -45,6 +45,19 @@ dwplot(by_trans,
                       breaks = c(0, 1),
                       labels = c("Automatic", "Manual"))
 
-
+### plot the normal distribution 
+dwplot(by_trans, 
+       vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) + # plot line at zero _behind_ coefs
+    theme_bw() + xlab("Coefficient Estimate") + ylab("") +
+    ggtitle("Predicting Gas Mileage by Transmission Type") +
+    theme(plot.title = element_text(face="bold"),
+          legend.position = c(0.007, 0.01),
+          legend.justification = c(0, 0),
+          legend.background = element_rect(colour="grey80"),
+          legend.title.align = .5) +
+    scale_colour_grey(start = .3, end = .7,
+                      name = "Transmission",
+                      breaks = c(0, 1),
+                      labels = c("Automatic", "Manual"))
 
 
