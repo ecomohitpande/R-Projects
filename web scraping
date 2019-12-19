@@ -50,6 +50,7 @@ str(movie_df)
 library('ggplot2')
 qplot(data=movie_df, Tittle)
 
-
+library(openxlsx)
+write.xlsx(movie_df, 'movie.xlsx')
 
 
