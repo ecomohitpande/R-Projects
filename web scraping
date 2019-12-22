@@ -3,6 +3,9 @@ library("rvest")
 url <- 'http://www.imdb.com/search/title?count=100&release_date=2016,2016&title_type=feature'
 
 webpage<- read_html(url)
+data <- gsub("...\\..*","",csv$Criminal)
+data
+
 
 # using selectors gazzed scrape teh ranking 
 
