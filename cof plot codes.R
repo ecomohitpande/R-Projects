@@ -77,3 +77,58 @@ by_transmission_brackets <- list(c("Overall", "Weight", "Weight"),
     add_brackets(by_transmission_brackets) +
     ggtitle("Predicting Gas Mileage by Transmission Type") +
     theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+
+######################################################################## I used 
+install.packages("devtools")
+library("devtools")
+install.packages("githubinstall")attach(as)
+library(githubinstall)
+library(rattle)
+library("dotwhisker")
+library("dplyr")
+rattle()
+
+install.packages("githubinstall")
+
+
+reg <-cbind(concentrated_feed_before,concentrated_feed_present,	green_forage_before,	
+            green_forage_present,	feed_supplement_before,	feed_supplement_present,
+            minmix_before,	minmix_present)
+            
+m1 <-lm(em~reg)
+m2 <-lm(emcb~reg)
+m3 <-lm(emind~reg)
+
+m2 <- update(m1, . ~ .)
+m3 <- update(m2, . ~ .)
+
+dwplot(list(m1,m2,m3))
+
+print(summary(reg3))
+
+dwplot(list(m1,m2,m3),
+            vline = geom_vline(xintercept = 0, colour = "grey60", linetype = 2)) %>%
+             relabel_predictors(c(con_b = "concentrated feed before",                       
+                      con_p = "concentrated feed present",
+                       for_b = "green forage before",
+                       for_p = "green forage present",
+                       sup_b = "feed supplement before",
+                       sup_p = "feed supplement present",
+                       mix_b = "minmix",
+                       mix_p = "minmix"))+
+  theme_bw() + xlab("- < Coefficient Estimate  >  +
+                    Model 1 = Buffalo, 
+                    Model 2 = Cross Breed,
+                    Model 3 = Indigenious Breed") + ylab("") +
+  geom_vline(xintercept = 0, colour = "grey60", linetype = 2)+
+  ggtitle("Predicting Methane Emission")+
+theme(plot.title = element_text(face="bold"),
+      legend.position = c(0.007, 0.01),
+      legend.justification = c(0, 0), 
+      legend.background = element_rect(colour="grey80"),
+      legend.title = element_blank()) 
+
+dwplot(reg3, conf.level = .95, xintercept = 0)
+
+
