@@ -1,0 +1,66 @@
+
+mydata<- read.csv("C:/Econometrics/Data/pca_gsp.csv")
+attach(ndp)
+
+X <- cbind(cincomeSrc_DairyFarm,	incomeSrc_DairyFarm)
+
+y <- cbind(pExp_PerMilchAnim_BETP,
+           pExp_PerMilchAnim_MIDP,pExp_PerMilchAnim_PRES)
+
+summary(x)
+cor(X)
+
+############################ codes forthe missing value 
+y <- c(1,2,3,NA)
+
+dp$AvgMilkProd_Qty_Summer_BETP[ndp$AvgMilkProd_Qty_Summer_METP==99] <- NA
+
+x <- c(NA)
+dp[!complete.cases(dp),]
+dp2 <- na.omit(dp)
+
+dp[dp==0] <- NA
+dp1 <-dp[complete.cases(dp),]
+
+dp3 <- dp[order(,dp$cincomeSrc_DairyFarm,dp$incomeSrc_DairyFarm),]
+
+
+#sort by mpg (ascending) and cyl (descending)
+newdata <- mtcars[order(mpg, -cyl),]
+
+gsub(pattern = '[-?]', replace='+', x = c('a', 'bc', '-'))
+
+####################for the exporting the data from R to excell
+
+library(openxlsx)
+write.xlsx(dp, 'w')
+
+########### for the principle component analysis
+pca1 <- princomp(X, scores=TRUE, cor=TRUE)
+summary(pca1)
+
+# Loadings of principal components
+loadings(pca1)
+#pca1$loadings
+
+# Scree plot of eigenvalues
+plot(pca1)
+screeplot(pca1, type="line", main="Scree Plot")
+
+# Biplot of score variables
+biplot(pca1)
+
+# Scores of the components
+pca1$scores[,]
+
+# Rotation
+
+# Factor analysis - different results from other softwares and no rotation
+fa1 <- factanal(X, factor=3)
+fa1
+
+fa2 <- factanal(X, factor=3, rotation="varimax")
+fa2
+
+fa3 <- factanal(X, factors=3, rotation="varimax", scores="regression")
+fa3
