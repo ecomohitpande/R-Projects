@@ -1,0 +1,99 @@
+Stata codes 
+Karnataka 
+For stationary 
+case of sgdp(state domestic product)
+gen lsgdp= log(sgdp)
+first difference: 
+gen d1sgdp= lsgdp-lsgdp[_n-1]
+gen ld1sgdp= log(d1sgdp)
+Test for stationarity  			at 10 % significance level 
+tsset years, yearly
+dfuller ld1sgdp, constant lags(1)
+Seasonality check 
+tsfilter hp ssgdp = ld1sgdp
+case of gfcf (gross fixed capital formation)
+gen lgfcf= log(gfcf)
+Second difference:
+gen d2lgfcf= lgfcf-lgfcf[_n-2]
+dfuller ld1gfcf, constant lags(1)
+Reporate stationarity check 
+dfuller repo, constant lags(3)
+Lag selection 
+varsoc ssgdp d2lgfcf repo, maxlag(12)
+Apply basic VAR model
+tsset years, yearly
+varbasic repo ssgdp d2lgfcf, lags(1/9) step(4)		oirf
+
+Maharashtra 
+for stationary 
+case of sgdp(codes) 
+case of sgdp(state domestic product)
+gen lsgdp= log(sgdp)
+First difference: 
+gen d1sgdp= lsgdp-lsgdp[_n-1]
+gen ld1sgdp= log(d1sgdp)
+Test for stationarity  			at 10 % significance level 
+tsset years, yearly
+dfuller ld1sgdp, constant lags(1)
+Seasonality check 
+tsfilter hp ssgdp = ld1sgdp     ;;;; one value is missing after taking log of first difference so  have 						extrapolated that value from excel which is -2.63059
+
+gfcf
+gen lgfcf= log(gfcf)
+gen d2lgfcf= lgfcf-lgfcf[_n-2]
+dfuller d2lgfcf, constant lags(3)			///// significantat 10% level
+Lag selection 
+varsoc ssgdp d2lgfcf repo, maxlag(12)
+Apply basic VAR model
+tsset years, yearly
+varbasic repo ssgdp d2lgfcf, lags(1/5) step(4)		oirf
+
+
+
+Himachal Pradesh
+ case of sgdp(state domestic product)
+gen lsgdp= log(sgdp)
+first difference: 
+gen d2sgdp= lsgdp-lsgdp[_n-2]
+Test for stationarity  			at 10 % significance level 
+tsset years, yearly
+dfuller d2sgdp, constant lags(1)
+Seasonality check 
+tsfilter hp ssgdp = ld2sgdp
+case of gfcf (gross fixed capital formation)
+gen lgfcf= log(gfcf)
+First difference:
+gen d1gfcf= lgfcf-lgfcf[_n-1]
+dfuller d1gfcf, constant lags(1)
+Apply basic VAR model
+tsset years, yearly
+varbasic repo d1gfcf ssgdp, lags(1/11) step(4)			oirf
+Rajisthan 
+case of sgdp(state domestic product)
+gen lsgdp= log(sgdp)
+first difference: 
+gen d1sgdp= lsgdp-lsgdp[_n-1]
+Test for stationarity  			at 10 % significance level 
+tsset years, yearly
+dfuller d1sgdp, constant lags(1)
+Seasonality check 
+tsfilter hp ssgdp = ld2sgdp
+case of gfcf (gross fixed capital formation)
+gen lgfcf= log(gfcf)
+First difference:
+gen d1gfcf= lgfcf-lgfcf[_n-1]
+dfuller d1gfcf, constant lags(1)
+Apply basic VAR model
+tsset years, yearly
+varbasic repo d1gfcf ssgdp, lags(1/6) step(4)			oirf
+
+
+
+
+
+
+
+
+
+
+
