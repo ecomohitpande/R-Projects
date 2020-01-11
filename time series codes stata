@@ -88,6 +88,73 @@ tsset years, yearly
 varbasic repo d1gfcf ssgdp, lags(1/6) step(4)			oirf
 
 
+2222222222@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+use "F:\Richa\Monetary policy_INDIA\STATA\data for analysis in stata.dta", clear
+gen time=q(2008q1)+ _n -1
+format time %tq
+tsset time
+
+gen lgdp = log( gdp_adj )
+tsfilter hp real_adj = lgdp, smooth(1600) trend(gdp_trend)
+gen outputgap = real_adj*100
+
+gen lcpi=log( cpiiw )
+gen infl_cpi =(lcpi-L.lcpi)*100
+gen laginflcpi =L.infl_cpi
+
+
+#####setting the VAR model and plotting impulse response fucntion####
+
+varsoc outputgap infl_cpi policyrate Inflation
+
+var outputgap infl_cpi 	Inflation policyrate, lags(1/3)
+tsset time, quarterly
+varbasic outputgap infl_cpi Inflation policyrate, lags(1/3) step(20) irf
+
+
+
+graph export . irf set "G:\SRC\stata graphs\graphs.irf"
+
+
+irf graph oirf, irf(varbasic) impulse(policyrate) response(infl_cpi)
+
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to infl_cpi.pdf", as(pdf) replace
+irf graph oirf, irf(varbasic) impulse(policyrate) response (Inflation) ustep(20)
+
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to inflation.pdf", as(pdf) replace
+varbasic outputgap infl_cpi Inflation policyrate, lags(1/3) step(20) irf
+
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\graph.pdf", as(pdf) replace
+irf graph oirf, irf(varbasic) impulse(policyrate) response(outputgap)graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to output gap.pdf", as(pdf) replace
+
+
+var policyrate infl_cpi Inflation outputgap, lags(1/3)
+varbasic policyrate infl_cpi Inflation outputgap, lags(1/3) step(20) irf
+irf graph oirf, irf(varbasic) impulse(policyrate) response(infl_cpi) ustep(20)
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to inflation.pdf", as(pdf) replace
+irf graph oirf, irf(varbasic) impulse(policyrate) response( Inflation ) ustep(20)
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to inf exp.pdf", as(pdf) replace
+irf graph oirf, irf(varbasic) impulse(policyrate) response(outputgap) ustep(20)
+graph export "F:\Richa\Monetary policy_INDIA\STATA\GRAPHS\policy rate to output gap.pdf", as(pdf) replace
+gen loginvest2003=log(invest2003)
+
+. regress cpiiw outputgap expinflation lcpi
+
+. 
+drop if date=="2008 Q2"
+
+
+varsoc repo gfcf sgdp gdpdeflator, maxlag(7)
+
+varbasic repo sgdp gdpdeflator gfcf, lags(1/5) step(10)
+irf graph oirf, irf(varbasic) impulse(sgdp) response(repo) ustep(10)
+graph export "G:\research work\TRN\data\main varibales\working files\ifr graphs\Middle Income State\kerala\repo to sgdp.pdf", as(pdf) replace
+irf graph oirf, irf(varbasic) impulse(gfcf) response(repo) ustep(10)
+
+
+
+
+
 
 
 
