@@ -1,0 +1,218 @@
+library(strucchange)
+library(quantmod)
+library(ggplot2)
+library(reshape)
+library(gdata)
+library(car)
+library(plm)
+#library(Hmisc)
+library(foreign)
+
+##YOY
+yoy.monthly <- function(x) {
+  xlag <- lag(x, -12)
+  100*(x-xlag)/xlag
+}
+
+##YOY quarterly
+yoy.quarterly <- function(x) {
+  xlag <- lag(x, -4)
+  100*(x-xlag)/xlag
+}
+
+
+
+##GRAPHING
+myplot.irf <- function(irf, ylabel="",xlabel="") {
+     biggest <- 1.1*max(abs(irf))
+     #lowest <- 1.1*min(irf)
+     plot(1:11, irf[,1], type="l", lwd=2, ylim=c(-biggest,biggest),
+    xlab=xlabel, ylab=ylabel,cex.lab=1.5,font.lab=1, cex.axis=1.5)
+ lines(1:11, irf[,2], lwd=1, lty=2)
+ lines(1:11, irf[,3], lwd=1, lty=2)
+ abline(h=0)
+ 0
+}
+
+irffunct <- function(modelname,model,dat){
+     t <- colnames(dat)
+     pdf(paste("../RESULTS/", modelname,".pdf", sep=""))
+     par(mfrow=c(3,2))
+
+     for(i in 1:(ncol(dat)-1)){
+        components <- irf(model, impulse=t[i], ortho=TRUE, response =t[ncol(dat)], n.ahead=10, cumulative= FALSE, boot=TRUE, ci= 0.95, runs=100, seed=NULL)
+        comp.arr <- cbind(unlist(components[[1]])*100 ,unlist(components[[2]])*100,unlist(components[[3]])*100)
+        myplot.irf(comp.arr,"cpi.food( months)",t[i])
+       
+      }
+  dev.off()
+     0
+}
+
+forecast <- function(dat, exo, cut.date, duration=2){       
+     date <- as.Date(cut.date)
+     dat.trunc <- window(dat, end=as.yearmon(date))
+     exo1 <- window(exo,end= as.yearmon(date %m-% months(2)))
+
+     exo.predict <- window(exo, start=as.yearmon(date %m-% months(1)), end=as.yearmon(date %m+% months(duration-2)))
+     m <- VAR(dat.trunc, p=1, type="none", exogen=exo1)
+     t <- predict(m, n.ahead= duration, dumvar=exo.predict)$fcst[[7]]
+     date <- as.yearmon(seq(date %m+% months(1), by = "1 month", length.out=duration))
+     forecast <- zoo(t[,(1:3)],date)
+                  
+}
+
+library(xtable)
+
+
+
+## Rolling forecast from apr 2009
+roll.forecast <- function(dat, exo, cut.date, duration){
+     date <- as.Date(cut.date)
+     dat.trunc <- window(dat, end=as.yearmon(date))
+     exo1 <- window(exo,end= as.yearmon(date %m-% months(2))) 
+     dat.outsample <- window(dat, start=as.yearmon(date %m+% months(1)), end=as.yearmon(date %m+% months(duration)))##duration
+     exo.extend <- window(lhs.pop[,c(8,9)], start=as.yearmon(date %m-% months(1)), end=as.yearmon(date %m+% months(duration-1)))##duration-2
+     exo2 <- exo.extend[1,]
+rollforecast <- list()
+     for(i in 1:(nrow(exo.extend)-1)){
+       m <- VAR(dat.trunc, p=1, type="none", exogen=exo1)
+       rollforecast[[i]] <- predict(m, n.ahead= 1, dumvar= exo2[i])$fcst[[7]]
+       dat.trunc <- rbind(dat.trunc,dat.outsample[i,])
+       exo1 <- rbind(exo1,exo2[i])
+       exo2 <-  rbind(exo2, exo.extend[i+1,])                    }
+    rollingforecast <- do.call("rbind", rollforecast)
+    date <- as.yearmon(seq(date %m+% months(1), by = "1 month", length.out=nrow(dat.outsample)))
+    rforecast <- zoo(rollingforecast[,(1:3)],date)   
+}
+
+
+##RMSE
+rmse <- function(orig,fcst,cut.date,duration){
+  date <- as.Date(cut.date)
+  dat <- window(orig, start=as.yearmon(date %m+% months(1)), end=as.yearmon(date %m+% months(duration)))##duration
+  rmse <- sqrt(mean((dat-fcst)^2))
+}
+
+## FEVD Analysis
+fevd.anly <- function(svm,n,name){
+     fev <- fevd(svm)
+     panel <- list()
+     for(i in 1:n){
+         panel[[i]] <- cbind(horizon=c("1","5","10"),round(100*fev[[i]][c(1,5,10),],digits=3))
+       }
+     all <- do.call("rbind", panel)
+     write.csv(all, file=paste("../RESULTS/",name,".csv",sep=""))
+     0
+}
+
+## GRAPH for forecast
+fcst.graph <- function(orgin,fcst,name){
+       pdf(paste("../RESULTS/", name,".pdf", sep=""),width=5.6,height=4.2)
+       par(mai=c(0.4, 0.8, 0.3, 0.2))
+       a <- min(orgin, fcst)
+       b <- max(orgin, fcst)
+       plot(orgin,ylim=c(a,b), ylab="",type="l", lwd=2)
+       lines(fcst[-1,1], col="blue",lty=1)
+       lines(fcst[-1,2], col="red",lty=2)
+       lines(fcst[-1,3], col="red",lty=2)
+       legend("bottomleft",col=c("green","blue","red"),lty=c(1,1,2,2),lwd=c(1), legend=c("inflation rate","inflation rate forecast","95% confidence interval"), bty="n",cex=0.40)
+dev.off()
+0
+}
+
+
+forecast.new <- function(dat, exo, cutdate){       
+  cutdate <- as.Date(cutdate)
+  exo1 <- exo[1:2,]
+   if(as.yearmon(cutdate) < index(dat[nrow(dat)])){
+     dat.trunc <- window(dat, end=as.yearmon(cutdate))
+     exo1 <- window(exo, end= as.yearmon(cutdate))
+     exo.predict <- window(exo, start=as.yearmon(cutdate %m+% months(1)), end=index(dat[nrow(dat)]))
+     m <- VAR(dat.trunc, p=1, type="none", exogen=exo1)
+     t <- predict(m, n.ahead=nrow(exo.predict) , dumvar=exo.predict)$fcst[[6]]
+     date <- as.yearmon(seq(cutdate %m+% months(1), by = "1 month", length.out=nrow(exo.predict)))
+     forecast <- zoo(t[,(1:3)],date)
+   }               
+}
+
+## Rolling forecast from apr 2009
+roll.forecast.new <- function(dat, exo, cutdate){
+  cutdate <- as.Date(cutdate)
+  rollfcst <- list()
+  exo1 <- exo[1:2,]
+   if(as.yearmon(cutdate) < index(dat[nrow(dat)])){
+     dat.trunc <- window(dat, end=as.yearmon(cutdate))
+     exo1 <- window(exo,end= as.yearmon(cutdate))
+     dat.out <- dat[-c(1:nrow(dat.trunc)),]
+     exo.extend <- exo[-c(1:nrow(exo1)),]
+     d <- nrow(dat)-nrow(dat.trunc)
+     for(i in 1:d){
+       m <- VAR(dat.trunc, p=1, type="none", exogen=exo1)
+       rollfcst[[i]] <- predict(m, n.ahead= 1, dumvar= exo.extend[i])$fcst[[6]]
+       dat.trunc <- rbind(dat.trunc,dat.out[i,])
+       exo1 <- rbind(exo1, exo.extend[i,])
+     }
+    rollfcst <- do.call("rbind", rollfcst)
+    date <- as.yearmon(seq(cutdate %m+% months(1), by = "1 month", length.out=nrow(exo.extend)))
+        rforecast <- zoo(rollfcst[,(1:3)],date)   
+   }
+}
+
+#############################################################
+##function to read and clean file
+############################################################
+cleandata <- function(filename,frequency){
+     file <- read.csv(paste("../DATA/", filename, sep=""), sep= "|", skip=1)
+    char.file <- data.frame(lapply(file[,-1], as.character), stringsAsFactors=FALSE)
+    date.file <-as.yearmon(as.Date(as.character(file[-1,1]),"%Y%m%d"))
+    freq.file <- char.file$Frequency
+    freq <- freq.file[-1]
+if("India" %in% char.file[1,]){
+    char.file <- char.file[,grep("India",char.file[1,])]
+    char.file <- char.file[-1,]
+  }
+if("Frequency" %in% colnames(char.file)){    
+    char.file <- char.file[ , -which("Frequency" %in% colnames(char.file))]
+    char.file <- char.file[-1,]
+}
+    char.file <- cbind(date.file,char.file,freq)
+    char.file <-char.file[which(char.file$freq == frequency),-ncol(char.file)]
+    num.file <- apply(char.file[,-1], 2, function(x){as.numeric(x)})
+  # if(ncol(num.file) > 2 ){
+   # colnames(num.file) <- tolower(colnames(num.file))
+  #}
+    final <- zoo(num.file,char.file[,1])
+}
+
+
+
+
+
+
+cleanfile <- function(file){
+
+tmp <- data.frame(lapply(file, as.character), stringsAsFactors=FALSE)
+tmp[, 1:(ncol(file))] <- lapply(tmp[, 1:(ncol(file))], function(x){as.numeric(gsub(",", "", x))})
+final <- cbind(tmp)
+
+}
+
+india <- cleanfile(india)
+
+cleanfile2 <- function(file){
+    
+    tmp <- file
+    cols <- names(file)
+    cols.char <- c("country", "date")
+    cols.num <- cols[!cols %in% cols.char]
+    tmp.char <- tmp[cols.char]
+    tmp.num <- as.data.frame(lapply(tmp[cols.num], function(x){as.numeric(gsub(",", "", x))}))
+    final <- cbind(tmp.char, tmp.num)
+    
+}
+
+
+
+
+
