@@ -1,0 +1,124 @@
+
+nnifty <-read.csv("G:/data/stock return/nnifty.csv")
+
+nifty1 <-read.csv("G:/data/stock return/nifty1.csv")
+
+library(tseries)
+library(vars)
+library(ggplot2)
+library("dplyr")
+library("ggpubr")
+library("car")
+attach(nnifty)
+attach(nifty1)
+
+
+##################for the line plots
+
+plot(nnifty$price, type="l", lwd=2,
+     xlab="Months", ylab="INR per Barrel", 
+     main="Brent Crude oil Prices",
+     xaxt="n", yline=c(0,100000), col="black")
+axis(1,at=1:length(month),labels=month)
+legend("topright",legend=c("nnifty","auto","fmcg"),
+lty=1,lwd=2,pch=21,col=c("orange","red"),
+ncol=2,bty="n",cex=0.8,
+text.col=c("red","orange"),inset=0.01)
+lines(nnifty$auto, col="red", type="l",lwd=2)
+$$$$$$$$$$$$$$$$$$$ for control charts 
+library(qicharts)
+qic(la,chart = "i")
+
+ 
+                                        ##############################################
+
+energy.stock.price <-log(diff(nnifty$energy))
+auto.stock.price <-diff(log(nnifty$auto))
+oil.price <-diff(log(nnifty$price))
+fmcg.stock.price <-diff(log(nnifty$fmcg))
+
+e <-diff(log(nnifty$energy))
+a <-diff(log(nnifty$auto))
+p <-diff(log(nnifty$price))
+f <-diff(log(nnifty$fmcg))
+
+
+eg <-(genergy)
+at <-(gauto)
+pr <-(gprice)
+fm <-(gfmcg)
+
+metal.stock.price <-diff(log(nifty1$metal))
+realestate.stock.price <-diff(log(nifty1$real))
+################################################
+
+adf.test(eg, alterantive ="stationary", k =1)
+adf.test(p, alterantive ="stationary", k =1)
+
+adf.test(a, alterantive ="stationary", k =1)
+adf.test(f, alterantive ="stationary", k =1)
+
+adf.test(r, alternative = "stationary", k=1 )
+adf.test(m, alterantive ="stationary", k =1)
+##########################################
+acf(gprice, main ="ACF Energy")
+pacf(e, main ="PACF Energy")
+
+acf(p, main ="ACF Brent Oil Prices")
+pacf(p, main ="PACF Brent Oil Prices")
+
+acf(f, main ="ACF FMCG")
+pacf(f, main ="PACF FCMG")
+
+acf(m, main ="ACF Metal")
+pacf(m, main ="PACF Metal")
+
+acf(r, main ="ACF Real Esatate")
+pacf(r, main ="PACF Real Estate")
+###################################################
+
+
+###normality test
+
+ggdensity(nnifty$price, 
+          main = "Density plot of tooth length",
+          xlab = "Tooth length")
+norm1<- normality.test(pc_VAR)
+norm1$jb.mul
+
+qqPlot(pc)
+
+qqnorm(pc);qqline(pc, col = 2)
+
+###################################checking for teh alg lenght for teh avr model
+pc =cbind(pr,eg, fm, at)
+
+pc =cbind(gprice, gfmcg, genergy, gauto)
+pc =cbind(oil.price, metal.stock.price, realestate.stock.price)
+############################################lag selction 
+VARselect(pc)
+######################################################### var codes 
+
+
+
+pc_VAR =VAR(pc, type ="const", lag.max = 2, ic ="AIC")
+pc_VAR
+plot(irf(apc_VAR, n.ahead=10))
+pdf("PICS/pc.pdf",width=6, height=3)
+
+or 
+model =VAR(data.frame(oil.price, auto.stock.price, 
+energy.stock.price, fmcg.stock.price), type ="const", lag.max = 2, ic = "AIC")
+plot(irf(model,n.ahead = 10, col="4"))
+par(mar=c(4,4,.2,.2), bty="l")
+
+or 
+plot(irf(apc_VAR, impluse = "eg", response = "pr", 
+n.ahead = 10, ortho = TRUE, cumulative = FALSE, boot = TRUE, ci = 0.95, runs = 100))
+
+model  =VAR(data.frame(oil.price, metal.stock.price, realestate.stock.price), type ="", lag.max = 2, ic = "AIC")
+plot(irf(model,n.ahead = 10, col="2"))
+
+
+
+
