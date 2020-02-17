@@ -1,0 +1,23 @@
+
+
+attach(ph)
+
+library(rpivotTable)
+library(breakDown)
+
+
+
+
+library(leaflet)
+leaflet()%>%
+  addTiles()%>%
+  addMarkers(lat = 29.373472, lng=78.040972,
+             popup = "river location")
+map%>% addProviderTiles("Esri.WorldImagery")
+
+attach(cwc)
+leaflet(data = cwc) %>% addTiles() %>%
+  addMarkers(~log, ~lat, popup = ~as.character(do), label = ~as.factor(do))%>% 
+             addProviderTiles("Esri.WorldImagery")
+
+
