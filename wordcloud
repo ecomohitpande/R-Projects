@@ -1,0 +1,119 @@
+a<-read.csv("C:/Users/mpandey/NDP/data/cwc/data/cwc1.csv")
+
+install package 
+install.packages("syuzhet")
+install.packages("scales")
+install.packages("reshape2")
+install.packages("lubridate")
+install.packages("tm")
+install.packages("wordcloud")
+install.packages("wordcloud2") 
+
+# Sentiment analysis
+library(syuzhet)
+library(lubridate)
+library(ggplot2)
+library(scales)
+library(reshape2)
+library(dplyr)
+library(wordcloud)
+library(wordcloud2)
+
+attach(a)
+str(a)
+
+  
+# Build corpus
+library(tm)
+corpus <- iconv(a$ganga)
+corpus <- Corpus(VectorSource(corpus))
+inspect(corpus[1:5])
+
+# Clean text
+corpus <- tm_map(corpus, tolower)
+inspect(corpus[1:5])
+
+corpus <- tm_map(corpus, removePunctuation)
+inspect(corpus[1:5])
+
+corpus <- tm_map(corpus, removeNumbers)
+inspect(corpus[1:5])
+
+cleanset <- tm_map(corpus, removeWords, stopwords('english'))
+inspect(cleanset[1:5])
+stopwords('english')  ## to romovce most comman words 
+
+
+cleanset <- tm_map(cleanset, removeWords, c('Will', 'Will'))
+cleanset <- tm_map(cleanset, gsub, 
+                   pattern = 'Will', 
+                   replacement = 'yi')
+
+cleanset1 <- tm_map(cleanset, stripWhitespace)
+inspect(cleanset[1:5])
+
+# Term document matrix
+tdm <- TermDocumentMatrix(cleanset1)
+tdm
+tdm <- as.matrix(tdm)
+tdm[1:10, 1:20]
+
+# Bar plot
+w <- rowSums(tdm)
+w1 <- subset(w, w>=4)
+barplot(w1,
+        las = 1, main= " Bar plot number of words accurance", 
+        tlab = "range of accurance",horiz = "T",
+        col = rainbow(50))
+
+
+# Word cloud
+library(wordcloud)
+w <- sort(rowSums(tdm), decreasing = TRUE)
+set.seed(300)
+wordcloud(words = names(w),
+          freq = w,
+          max.words = 100,
+          random.order = F,
+          min.freq = 2,
+          colors = brewer.pal(8, 'Dark2'),
+          scale = c(5, 0.3),
+          rot.per = 0.20)
+
+library(wordcloud2)
+w2 <- data.frame(names(w), w)
+colnames(w) <- c('word', 'freq')
+wordcloud2(w,
+           size = 0.7,
+           shape = 'Ganga',
+           rotateRatio = 0.5,
+           minSize = 1)
+
+letterCloud(w,
+            word = "Ganga",
+            size=1)
+
+# Sentiment analysis
+library(syuzhet)
+library(lubridate)
+library(ggplot2)
+library(scales)
+library(reshape2)
+library(dplyr)
+
+# Read file
+apple <- read.csv("C:/Users/mpandey/NDP/data/cwc/data/cwc1.csv")
+tweets <- iconv(apple$ganga)
+
+tweets
+# Obtain sentiment scores
+s <- get_nrc_sentiment(tweets)
+head(s)
+tweets[2]
+get_nrc_sentiment('delay')
+
+# Bar plot
+barplot(colSums(s),
+        las = 2,
+        col = rainbow(10), horiz = TRUE,
+        main = 'Sentiment Scores')
