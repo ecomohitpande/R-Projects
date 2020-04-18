@@ -120,5 +120,69 @@ model  =VAR(data.frame(oil.price, metal.stock.price, realestate.stock.price), ty
 plot(irf(model,n.ahead = 10, col="2"))
 
 
+#####################################codes for line charts 
+b <- read.csv("G:/ieg/epw time series data/b.csv")
+attach(b)
+
+
+library(xts)
+attach(b)
+str(b)
+
+
+par(mfrow=c(2,2), mar=c(5,3,2,1), las=1, bty="n")
+plot(y=b$Agriculture,x=b$year, type = "l", main = "Growth Rates",col="orange",
+     ylim = c(-20,80),
+     xlab = "years", ylab="percent")+ abline(h=0.395,lty=5,col="red")
+legend("topright",legend=c("agri","forest"),
+       lty=1,lwd=2,pch=21,col=c("orange","green"),
+       ncol=2,bty="n",cex=0.8,
+       text.col=c("orange","green"),inset=0.1)
+lines(y=b$Forestry.and.Logging,x=b$year, col="green", type="l",lwd=2)
+
+
+plot(y=b$Agriculture,x=b$year, type = "l", main = "Agriculture Growth Rate",col="red",
+     ylim = c(-60,100),
+     xlab = "years", ylab="percent")+ abline(h=0.395,lty=5,col="blue")
+##############################growth rates 
+growth<-b
+growth_rateb = growth %>%
+  # first sort by year
+  arrange(year)%>%
+  mutate(Diff_year = year - lag(year),  # Difference in time (just in case there are gaps)
+         Diff_growth =banking  - lag(banking), # Difference in route between years
+         Rate_percent = (Diff_growth / Diff_year)/banking * 100) # growth rate in percent
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
