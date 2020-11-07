@@ -1,23 +1,372 @@
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+
+library(dplyr)
 
 
-attach(ph)
+are<- kt%>% filter(crop=="Arecant") %>% 
+  group_by(NAME_2) %>% 
+  summarize(Arecant=sum(value))
 
-library(rpivotTable)
-library(breakDown)
-
-
-
-
-library(leaflet)
-leaflet()%>%
-  addTiles()%>%
-  addMarkers(lat = 29.373472, lng=78.040972,
-             popup = "river location")
-map%>% addProviderTiles("Esri.WorldImagery")
-
-attach(cwc)
-leaflet(data = cwc) %>% addTiles() %>%
-  addMarkers(~log, ~lat, popup = ~as.character(do), label = ~as.factor(do))%>% 
-             addProviderTiles("Esri.WorldImagery")
+red<- kt%>% filter(crop=="Redgram") %>% 
+  group_by(NAME_2) %>% 
+  summarize(redgram=sum(value))
 
 
+maiz<- kt%>% filter(crop=="Maize") %>% 
+  group_by(NAME_2) %>% 
+  summarize(Maize=sum(value))
+
+baj<- kt%>% filter(crop=="Bajra") %>% 
+  group_by(NAME_2) %>% 
+  summarize(Bajra=sum(value))
+
+
+ben<- kt%>% filter(crop=="benGram") %>% 
+  group_by(NAME_2) %>% 
+  summarize(BenGram=sum(value))
+
+green<- kt%>% filter(crop=="Greengram") %>% 
+  group_by(NAME_2) %>% 
+  summarize(Greengram=sum(value))
+
+
+Sgrcn<- kt%>% filter(crop=="Sgrcn") %>% 
+  group_by(NAME_2) %>% 
+  summarize(sgrcn=sum(value))
+
+sunflr<- kt%>% filter(crop=="Snflr") %>% 
+  group_by(NAME_2) %>% 
+  summarize(snflr=sum(value))
+
+
+oni<- kt%>% filter(crop=="onion") %>% 
+  group_by(NAME_2) %>% 
+  summarize(onion=sum(value))
+
+grnt<- kt%>% filter(crop=="Grnut") %>% 
+  group_by(NAME_2) %>% 
+  summarize(groundnut=sum(value))
+
+
+cot<- kt%>% filter(crop=="Cotton") %>% 
+  group_by(NAME_2) %>% 
+  summarize(cotton=sum(value))
+
+pad<- kt%>% filter(crop=="paddy") %>% 
+  group_by(NAME_2) %>% 
+  summarize(pady=sum(value))
+
+
+rag<- kt%>% filter(crop=="Ragi") %>% 
+  group_by(NAME_2) %>% 
+  summarize(ragi=sum(value))
+
+wht<- kt%>% filter(crop=="wheat") %>% 
+  group_by(NAME_2) %>% 
+  summarize(wheat=sum(value))
+
+
+chill<- kt%>% filter(crop=="chilli") %>% 
+  group_by(NAME_2) %>% 
+  summarize(chili=sum(value))
+
+tom<- kt%>% filter(crop=="tomato") %>% 
+  group_by(NAME_2) %>% 
+  summarize(tomatoo=sum(value))
+
+
+pom<- kt%>% filter(crop=="pomgrnt") %>% 
+  group_by(NAME_2) %>% 
+  summarize(pomgt=sum(value))
+
+flwr<- kt%>% filter(crop=="flower") %>% 
+  group_by(NAME_2) %>% 
+  summarize(flowers=sum(value))
+
+
+cart<- kt%>% filter(crop=="carrot") %>% 
+  group_by(NAME_2) %>% 
+  summarize(carot=sum(value))
+
+cbg<- kt%>% filter(crop=="cabbg") %>% 
+  group_by(NAME_2) %>% 
+  summarize(cabg=sum(value))
+
+mng<- kt%>% filter(crop=="mango") %>% 
+  group_by(NAME_2) %>% 
+  summarize(mangoo=sum(value))
+
+
+hrsgm<- kt%>% filter(crop=="horsgrm") %>% 
+  group_by(NAME_2) %>% 
+  summarize(hrgrm=sum(value))
+
+tur<- kt%>% filter(crop=="turmeric") %>% 
+  group_by(NAME_2) %>% 
+  summarize(turmer=sum(value))
+
+
+cap<- kt%>% filter(crop=="capscm") %>% 
+  group_by(NAME_2) %>% 
+  summarize(caps=sum(value))
+
+
+coc<- kt%>% filter(crop=="cocnt") %>% 
+  group_by(NAME_2) %>% 
+  summarize(cocnt=sum(value))
+
+
+brin<- kt%>% filter(crop=="brinjal") %>% 
+  group_by(NAME_2) %>% 
+  summarize(brinj=sum(value))
+
+
+cof<- kt%>% filter(crop=="coffee") %>% 
+  group_by(NAME_2) %>% 
+  summarize(coffe=sum(value))
+
+
+pot<- kt%>% filter(crop=="potato") %>% 
+  group_by(NAME_2) %>% 
+  summarize(pota=sum(value))
+
+
+jow<- kt%>% filter(crop=="Jowar") %>% 
+  group_by(NAME_2) %>% 
+  summarize(jowar=sum(value))
+
+ban<- kt%>% filter(crop=="banana") %>% 
+  group_by(NAME_2) %>% 
+  summarize(bana=sum(value))
+
+
+
+
+
+
+store<-Reduce(function(x, y) merge(x, y, all=TRUE),
+              list(red, baj, maiz, are,
+                   ben,green,Sgrcn,sunflr,
+                   oni,grnt,cot,pad,
+                   rag,wht,chill,tom,pom,
+                   flwr, cart,cbg,mng,
+                   hrsgm,tur,cap,coc,
+                   brin,cof, pot, jow,
+                   ban))
+
+View(store)
+ 
+write.csv(store, "district_summarise.csv")
+
+
+####MAP section#########
+
+library(ggplot2)
+library(dplyr)
+library(raster)
+library(tmap)
+library(sp)
+library(RColorBrewer)
+
+
+in_d <- getData('GADM', country='IND', level=2)
+str(in_s, max.level=2)
+
+data <- read.csv("G:/ifpri work/karnataka/district_summarise.csv")
+View(data)
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+kar_subset@data$NAME_2<- tolower(kar_subset@data$NAME_2)
+
+kar_subset@data<- merge(kar_subset@data,data, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+View(kar_map)
+
+
+pun_subset<- in_d[in_d@data$NAME_1=="Karnataka",]
+pun_subset@data$NAME_2<- tolower(pun_subset@data$NAME_2)
+
+pun_subset@data<-merge(pun_subset@data, data, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+
+View(pun_subset@data)
+tm_shape(pun_subset) +  tm_fill(col = "Redgram")
+
+map1<-tm_shape(pun_subset) +
+  tm_fill(col = "Redgram")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map2<-tm_shape(pun_subset) +
+  tm_fill(col = "Bajra")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map3<-tm_shape(pun_subset) +
+  tm_fill(col = "Maize")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map4<-tm_shape(pun_subset) +
+  tm_fill(col = "Arecant")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+
+map5<-tm_shape(pun_subset) +
+  tm_fill(col = "BenGram")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+
+map6<-tm_shape(pun_subset) +
+  tm_fill(col = "sgrcn")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map7<-tm_shape(pun_subset) +
+  tm_fill(col = "snflr")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map8<-tm_shape(pun_subset) +
+  tm_fill(col = "onion")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+map9<-tm_shape(pun_subset) +
+  tm_fill(col = "Groundnut")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+
+map10<-tm_shape(pun_subset) +
+  tm_fill(col = "Cotton")+
+  tm_shape(in_d)+
+  tm_borders(col="black")+
+  tm_legend(outside = TRUE)
+
+
+tmap_arrange(map1,map2,map3,map4,map5,map6,map7,map8,map9,map10)
+
+################################################################
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+library(dplyr)
+attach(kt)
+
+
+CSA_Districtwise<- kt %>% filter(tech=="t1" | tech=="t2" | tech=="t3" |tech=="t5" | tech=="t6" | tech=="t7") %>% 
+  group_by(NAME_2) %>% summarise(CSA_Districtwise=sum(value))
+
+Improved_CSA_Districtwise<- kt %>% filter(tech=="t4" | tech=="t8" | tech=="t9" |
+                                      tech=="t10" | tech=="t11" | tech=="t12" 
+                                    | tech=="t13" | tech=="t14" | tech=="t15") %>% 
+  group_by(NAME_2) %>% summarise(improve_CSA_Districtwise=sum(value))
+
+
+no_CSA<- kt %>% filter(tech=="t0") %>% group_by(NAME_2) %>% summarise(no_csa=sum(value))
+  
+head(kt$tech)
+
+csaimprocved<- merge(CSA_Districtwise, Improved_CSA_Districtwise)
+
+View(csaimprocved)
+
+write.csv(csaimprocved, "csaimprocved_tech.csv")
+
+write.csv(no_CSA, "no_tech.csv")
+###################################################################Income
+attach(kt)
+
+income<-kt %>% group_by(NAME_2) %>% summarise(sum(value)) 
+write.csv(income,"District_income.csv")
+##################################################################maps 
+
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+in_d <- getData('GADM', country='IND', level=2)
+
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+kar_subset@data$NAME_2<- tolower(kar_subset@data$NAME_2)
+
+kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+View(kar_map)
+
+#############
+
+csa1<-tm_shape(kar_subset) +
+  tm_fill(c("csa"), style="kmeans", 
+          title=c("Crop Area Under CSA"))+ 
+  tm_borders(col = "lightgreen")+
+  tm_text("NAME_2", size = 1/2,col = "black")+
+  tm_legend(outside = TRUE)+
+  tm_layout(frame = F, title.size = 2)
+
+
+csa1<-tm_shape(kar_subset) +
+  tm_fill(c("csa"), style="kmeans", 
+          title=c("Crop Area Under CSA"))+ 
+  tm_borders(col = "white")+
+  tm_text("NAME_2", size = 1/3,col = "black")+
+  tm_borders()+
+  tm_layout("Crop Area Under CSA",legend.title.size = .02,
+            legend.text.size = 0.6,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+
+
+csa2<-tm_shape(kar_subset) +
+  tm_fill(c("im_csa"), style="kmeans", 
+          title=c("Crop Area Under Improve CSA"))+ 
+  tm_borders(col = "white")+
+  tm_text("NAME_2", size = 1/3,col = "black")+
+  tm_borders()+
+  tm_layout("Crop Area Under Improve CSA",legend.title.size = .02,
+            legend.text.size = 0.6,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+  
+
+csa3<-tm_shape(kar_subset) +
+  tm_fill(c("no_csa"), style="kmeans", 
+          title=c("Crop Area Under Non CSA"))+ 
+  tm_borders(col = "white")+
+  tm_text("NAME_2", size = 1/3,col = "black")+
+  tm_borders()+
+  tm_layout("Crop Area Under Non CSA",legend.title.size = .02,
+            legend.text.size = 0.6,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+csa4<-tm_shape(kar_subset) +
+  tm_fill(c("income"), style="kmeans", 
+          title=c("Farmers Income"),palette = "-viridis")+ 
+  tm_borders(col = "white")+
+  tm_text("NAME_2", size = 1/3,col = "black")+
+  tm_borders()+
+  tm_layout("Farmers Income",legend.title.size = .02,
+            legend.text.size = 0.6,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+  
+  
+tmap_arrange(csa1, csa2,csa3,csa4, ncol =2)
+
+
+  
+  
