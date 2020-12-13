@@ -1,7 +1,5 @@
 kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
 
-library(dplyr)
-
 
 are<- kt%>% filter(crop=="Arecant") %>% 
   group_by(NAME_2) %>% 
@@ -156,11 +154,11 @@ store<-Reduce(function(x, y) merge(x, y, all=TRUE),
 
 View(store)
  
-write.csv(store, "district_summarise.csv")
+write.csv(store, "notech.csv")
 
 
 ####MAP section#########
-
+library(dplyr)
 library(ggplot2)
 library(dplyr)
 library(raster)
@@ -257,16 +255,16 @@ map10<-tm_shape(pun_subset) +
 
 tmap_arrange(map1,map2,map3,map4,map5,map6,map7,map8,map9,map10)
 
-################################################################
+######################## under CSA @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
 library(dplyr)
 attach(kt)
 
 
 CSA_Districtwise<- kt %>% filter(tech=="t1" | tech=="t2" | tech=="t3" |tech=="t5" | tech=="t6" | tech=="t7") %>% 
-  group_by(NAME_2) %>% summarise(CSA_Districtwise=sum(value))
+  group_by(NAME_2) %>% summarise(CSA=sum(value))
 
-Improved_CSA_Districtwise<- kt %>% filter(tech=="t4" | tech=="t8" | tech=="t9" |
+Improved<- kt %>% filter(tech=="t4" | tech=="t8" | tech=="t9" |
                                       tech=="t10" | tech=="t11" | tech=="t12" 
                                     | tech=="t13" | tech=="t14" | tech=="t15") %>% 
   group_by(NAME_2) %>% summarise(improve_CSA_Districtwise=sum(value))
@@ -274,29 +272,23 @@ Improved_CSA_Districtwise<- kt %>% filter(tech=="t4" | tech=="t8" | tech=="t9" |
 
 no_CSA<- kt %>% filter(tech=="t0") %>% group_by(NAME_2) %>% summarise(no_csa=sum(value))
   
-head(kt$tech)
 
-csaimprocved<- merge(CSA_Districtwise, Improved_CSA_Districtwise)
+csaimprocved<- merge(CSA_Districtwise, Improved)
 
 View(csaimprocved)
 
-write.csv(csaimprocved, "csaimprocved_tech.csv")
+write.csv(csaimprocved, "csa&improve.csv")
 
 write.csv(no_CSA, "no_tech.csv")
-###################################################################Income
-attach(kt)
-
-income<-kt %>% group_by(NAME_2) %>% summarise(sum(value)) 
-write.csv(income,"District_income.csv")
-##################################################################maps 
+################## CSA and Improve Income @@@@@@@@@@@@
 
 kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
 in_d <- getData('GADM', country='IND', level=2)
+kt$NAME_2
 
-
+View(in_d@data)
 kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
 
-kar_subset@data$NAME_2<- tolower(kar_subset@data$NAME_2)
 
 kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
 View(kar_map)
@@ -323,8 +315,6 @@ csa1<-tm_shape(kar_subset) +
             legend.position = c("left","bottom"),
             legend.bg.color = "white",
             legend.bg.alpha = 1)
-
-
 
 
 csa2<-tm_shape(kar_subset) +
@@ -367,6 +357,245 @@ csa4<-tm_shape(kar_subset) +
   
 tmap_arrange(csa1, csa2,csa3,csa4, ncol =2)
 
+library(dplyr)
+library(tidyverse)
+tech <- kt %>% group_by(NAME_2) %>% summarise(total=sum(value))
 
+View(in_d@data$NAME_2)  
+write.csv(tech, "tech.csv")  
+
+
+###With tech with no tech @@@@@@@@@@@@@
   
-  
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+
+in_d <- getData('GADM', country='IND', level=2)
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+
+kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+
+
+notech<-tm_shape(kar_subset) +
+  tm_fill(c("notech"), style="kmeans", 
+          title=c("No Technology"),palette = "YlOrBr")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("No Technology",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+withtech<-tm_shape(kar_subset) +
+  tm_fill(c("withtech"), style="kmeans", 
+          title=c("With Technology"),palette = "BuGn")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("With Technology",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+techadopt<-tm_shape(kar_subset) +
+  tm_fill(c("techadopt"), style="kmeans", 
+          title=c("Technology Adoption"),palette = "plasma")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("Technology Adoption",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+techadopt
+tmap_arrange(notech,withtech,techadopt, ncol =2)
+
+
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+notech<-kt %>% group_by(NAME_2) %>% summarise(notech=sum(value)) 
+
+withtech<-kt %>% group_by(NAME_2) %>% summarise(withtech=sum(value)) 
+
+withtech<-kt %>% group_by(NAME_2) %>% summarise(withtech=sum(value)) 
+
+write.csv(notech,"notech.csv")
+write.csv(withtech,"withtech.csv")
+write.csv(withtech,"excluding t0 withtech.csv")
+
+###########csa and improve csa###########
+
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+
+in_d <- getData('GADM', country='IND', level=2)
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+
+kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+
+
+
+csa<-tm_shape(kar_subset) +
+  tm_fill(c("csa"), style="kmeans", 
+          title=c("Climate Smart Technology"),palette = "YlOrBr")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("Climate Smart Technology",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+improve<-tm_shape(kar_subset) +
+  tm_fill(c("improve"), style="kmeans", 
+          title=c("Improve Technology"),palette = "BuGn")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("Improve Technology",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+csa_adopt<-tm_shape(kar_subset) +
+  tm_fill(c("csa_techadopt"), style="kmeans", 
+          title=c("CSA Technology Adoption"),palette = "YlOrBr")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("CSA Technology Adoption",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+improve_adopt<-tm_shape(kar_subset) +
+  tm_fill(c("imp_techadopt"), style="kmeans", 
+          title=c("Improve Technology Adoption"),palette = "BuGn")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("Improve Technology Adoption",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+tmap_arrange(csa_adopt,improve_adopt, ncol =2)
+
+
+##############water file @@@@@@@@@@@@@@@
+library(dplyr)
+library(ggplot2)
+library(dplyr)
+library(raster)
+library(tmap)
+library(sp)
+library(RColorBrewer)
+
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+
+in_d <- getData('GADM', country='IND', level=2)
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+
+notech_water<-tm_shape(kar_subset) +
+  tm_fill(c("notech_water"), style="kmeans", 
+          title=c("No Technology, Water Use"),palette = "BuGn")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("No Technology, Water Use",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+withtech_water<-tm_shape(kar_subset) +
+  tm_fill(c("withtech_water"), style="kmeans", 
+          title=c("With Technology, Water Use"),palette = "BuGn")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("With Technology, Water Use",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+withtech_adopt<-tm_shape(kar_subset) +
+  tm_fill(c("withtech_water_adopt"), style="kmeans", 
+          title=c("With Technology Water Adoption"),palette = "magma")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "white")+
+  tm_borders()+
+  tm_layout("With Technology Adoption",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+tmap_arrange(notech_water, withtech_water, ncol = 2)
+
+################## with and without_tech Income @@@@@@@@@@@@##
+
+
+kt <- read.csv("G:/ifpri work/karnataka/kt.csv")
+
+notech_income<-kt %>% group_by(NAME_2) %>% summarise(withtech=sum(value)) 
+
+write.csv(notech_income,"notech_incoe.csv")
+
+in_d <- getData('GADM', country='IND', level=2)
+
+kar_subset<-in_d[in_d@data$NAME_1=="Karnataka",]
+
+kar_subset@data<- merge(kar_subset@data,kt, by.x="NAME_2", by.y="NAME_2", all.x=TRUE)
+
+
+
+notech_income<-tm_shape(kar_subset) +
+  tm_fill(c("notech_income"), style="kmeans", 
+          title=c("No Technology, Income"),palette = "viridis")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("No Technology, Income",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+withtech_income<-tm_shape(kar_subset) +
+  tm_fill(c("withtech_income"), style="kmeans", 
+          title=c("With Technology, Income"),palette = "viridis")+ 
+  tm_borders(col = "black")+
+  tm_text("NAME_2", size = 1/1.5,col = "black")+
+  tm_borders()+
+  tm_layout("With Technology, Income",legend.title.size = .01,
+            legend.text.size = 0.5,
+            legend.position = c("left","bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 1)
+
+
+tmap_arrange(notech_income,withtech_income, ncol = 2)
+
+cor(kt$rf,kt$notech_water)
