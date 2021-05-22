@@ -1,0 +1,123 @@
+---
+title: "regression"
+author: "mohit"
+date: "21/05/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r}
+library(tseries)
+library(ggplot2)
+library(dplyr)
+library(dotwhisker)
+library(ggcorrplot)
+library(texreg)
+
+reg1 <- read.csv("E:/course/iazolo/paper/reg.csv", stringsAsFactors=FALSE)
+reg2 <- read.csv("E:/course/iazolo/paper/reg2.csv", stringsAsFactors=FALSE)
+View
+```
+```{r}
+## required test before using OLS regression
+acf(reg1$debt)
+acf(reg1$m3)
+acf(reg1$emp)
+acf(reg1$inf)
+
+#### taking first difference to remove acf 
+ddebt<-diff(reg1$debt)
+dinf<-diff(reg1$inf)
+demp<-diff(reg1$emp)
+dm3<-diff(reg1$m3)
+
+```
+
+```{r}
+##normality check 
+ggqqplot(ddebt)
+ggqqplot(dinf)
+ggqqplot(demp)
+ggqqplot(dm3)
+
+### checking Unit Root Test
+adf.test(ddebt, alternative= "stationary", k=0)
+adf.test(dinf,alternative="stationary", k=0) 
+adf.test(demp, alternative="stationary", k=0) 
+adf.test(reg1$m3,alternative="stationary", k=2)
+
+```
+```{r}
+#### ploting rthe correlation plot 
+
+corjoin<- cbind(ddebt,dinf,demp,dm3)
+corsample1<- cor(corjoin)
+
+cor1<-ggcorrplot(corsample1, hc.order = TRUE, type = "lower",
+                 lab = FALSE,sig.level = 05, lab_size = 3)+
+  ggtitle("Correlation Results, 2011-2015 ")
+
+cor1
+
+## using simple OLs linear regession model without log or differences
+model1<- lm(ddebt~dinf+demp+dm3)
+summary(model1)
+```
+```{r}
+###stationary check 
+ddebt2<-diff(reg2$debt)
+dinf2<-diff(reg2$inf)
+demp2<-diff(reg2$emp)
+dm32<-diff(reg2$m3)
+
+ggqqplot(ddebt2)
+ggqqplot(dinf2)
+ggqqplot(demp2)
+ggqqplot(dm32)
+
+#### ploting rthe correlation plot
+corjoin2<- cbind(ddebt2,dinf2,demp2,dm32)
+corsample2<- cor(corjoin2)
+
+cor2<-ggcorrplot(corsample2, hc.order = TRUE, type = "lower",
+                 lab = FALSE,sig.level = 05, lab_size = 3 )+
+  ggtitle("Correlation Results, 2015-2020 ")
+
+cor2
+
+## using simple OLs linear regession model without log or differences
+model2<- lm(ddebt2~dinf2+demp2+dm32)
+summary(model2)
+```
+```{r}
+######## Regression plots graphs and values in regression tables
+
+regresult<-dwplot(list(model1,model2),
+       vline = geom_vline(xintercept = 0, colour = "grey60", 
+                          linetype = 2)) %>%  
+        relabel_predictors(c(dinf = "Inflation",                       
+                       demp = "Unemployment", 
+                       dm3 = "M 3",
+                       dm32="M 3",
+                       dinf2= "Inflation",
+                       demp2="Unemployment")) +
+  theme_bw() + xlab("Coefficient Estimate") + ylab("") +
+  geom_vline(xintercept = 0, colour = "grey60", linetype = 2) +
+  ggtitle("OLS Regression Results, Model 1 and Model 2") +
+  theme(plot.title = element_text(face="bold"),
+        legend.position = c(0.007, 0.01),
+        legend.justification = c(0, 0), 
+        legend.background = element_rect(colour="grey80"),
+        legend.title = element_blank()) 
+
+regresult
+
+```
+for converting the numeric file into word file with regression table and significance level 
+```{r}
+htmlreg(list(model1,model2), file= "olsresults",
+        caption= "Regression Results",
+        caption.above=TRUE, custom.model.names=c("OLS1","OLS2"),
+        digits=2)
+```
